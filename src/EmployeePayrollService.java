@@ -15,9 +15,9 @@ public class EmployeePayrollService {
         service.readEmployeeFromConsole();
         service.writeEmployeeToConsole();
         // UC 2: Demonstrate File Operations
-        service.performFileOperations();
+//        service.performFileOperations();
         // UC 3: Create a Watch Service for a Directory
-//        service.watchDirectory("testDirectory");
+        service.watchDirectory("testDirectory");
         // UC 4: Write Employee Payroll to File
         service.writeEmployeeToFile();
 
@@ -95,36 +95,69 @@ public class EmployeePayrollService {
         Path path = Paths.get(directoryPath);
         WatchService watchService = FileSystems.getDefault().newWatchService();
 
+        // Register the directory with the WatchService for CREATE, DELETE, and MODIFY events
         path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
                 StandardWatchEventKinds.ENTRY_DELETE,
                 StandardWatchEventKinds.ENTRY_MODIFY);
 
         System.out.println("Watching directory: " + path);
+        System.out.println("Type 'exit' to stop watching.");
 
-        while (true) {
-            WatchKey key = watchService.take();
-            for (WatchEvent<?> event : key.pollEvents()) {
-                WatchEvent.Kind<?> kind = event.kind();
-                Path fileName = (Path) event.context();
-                System.out.println(kind + ": " + fileName);
+        // Start a thread to monitor user input for termination
+        Thread inputThread = new Thread(() -> {
+            Scanner scanner = new Scanner(System.in);
+            while (true) {
+                if (scanner.nextLine().equalsIgnoreCase("exit")) {
+                    try {
+                        watchService.close(); // Close the WatchService when "exit" is typed
+                        System.out.println("Watch service stopped.");
+                        break;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-            if (!key.reset()) {
-                break;
+            scanner.close();
+        });
+        inputThread.start();
+
+        try {
+            // Monitor the directory for events
+            while (true) {
+                WatchKey key = watchService.take(); // Blocks until an event occurs
+
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    WatchEvent.Kind<?> kind = event.kind(); // Type of event
+                    Path fileName = (Path) event.context(); // Affected file or directory
+
+                    // Print details of the event
+                    System.out.println(kind + ": " + fileName);
+                }
+
+                // Reset the key to continue watching
+                if (!key.reset()) {
+                    System.out.println("WatchKey is no longer valid. Exiting.");
+                    break; // Exit loop if directory is no longer accessible
+                }
             }
+        } catch (ClosedWatchServiceException e) {
+            System.out.println("Watch service has been closed.");
         }
     }
+
     // UC 4: Write Employee Payroll to File
     private void writeEmployeeToFile() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(PAYROLL_FILE_NAME))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(PAYROLL_FILE_NAME, true))) { // 'true' enables append mode
             for (EmployeePayroll employee : employees) {
-                writer.write(employee.toString());
+                writer.append(employee.toString());
                 writer.newLine();
             }
-            System.out.println("Employee Payroll written to file.");
+            System.out.println("Employee Payroll appended to file.");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     // UC 5: Print and Count Employee Payroll Entries
     private void printEmployeeFromFile() {
