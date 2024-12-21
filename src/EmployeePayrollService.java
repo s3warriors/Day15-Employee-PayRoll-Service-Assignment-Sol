@@ -1,7 +1,4 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -23,6 +20,10 @@ public class EmployeePayrollService {
 //        service.watchDirectory("testDirectory");
         // UC 4: Write Employee Payroll to File
         service.writeEmployeeToFile();
+
+        // UC 5: Print and Count Employee Payroll Entries
+        service.printEmployeeFromFile();
+        service.countEntriesInFile();
    }
 
 
@@ -122,4 +123,27 @@ public class EmployeePayrollService {
         }
     }
 
+    // UC 5: Print and Count Employee Payroll Entries
+    private void printEmployeeFromFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(PAYROLL_FILE_NAME))) {
+            String line;
+            System.out.println("Employee Payrolls from File:");
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private void countEntriesInFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(PAYROLL_FILE_NAME))) {
+            int count = 0;
+            while (reader.readLine() != null) {
+                count++;
+            }
+            System.out.println("Total entries in file: " + count);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
