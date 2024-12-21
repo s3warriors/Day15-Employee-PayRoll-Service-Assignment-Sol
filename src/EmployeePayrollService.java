@@ -24,6 +24,9 @@ public class EmployeePayrollService {
         // UC 5: Print and Count Employee Payroll Entries
         service.printEmployeeFromFile();
         service.countEntriesInFile();
+
+        // UC 6: Perform Analysis on Employee Payroll File
+        service.analyzeEmployeePayrollFile();
    }
 
 
@@ -146,4 +149,25 @@ public class EmployeePayrollService {
             e.printStackTrace();
         }
     }
+    // UC 6: Perform Analysis on Employee Payroll File
+    private void analyzeEmployeePayrollFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(PAYROLL_FILE_NAME))) {
+            int totalEntries = 0;
+            double totalSalary = 0;
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                totalEntries++;
+                String[] details = line.split(", ");
+                String salaryString = details[2].split(": ")[1];
+                totalSalary += Double.parseDouble(salaryString);
+            }
+
+            System.out.println("Total Employees: " + totalEntries);
+            System.out.println("Total Salary: " + totalSalary);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
