@@ -1,4 +1,6 @@
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -18,7 +20,9 @@ public class EmployeePayrollService {
         // UC 2: Demonstrate File Operations
         service.performFileOperations();
         // UC 3: Create a Watch Service for a Directory
-        service.watchDirectory("testDirectory");
+//        service.watchDirectory("testDirectory");
+        // UC 4: Write Employee Payroll to File
+        service.writeEmployeeToFile();
    }
 
 
@@ -103,6 +107,18 @@ public class EmployeePayrollService {
             if (!key.reset()) {
                 break;
             }
+        }
+    }
+    // UC 4: Write Employee Payroll to File
+    private void writeEmployeeToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(PAYROLL_FILE_NAME))) {
+            for (EmployeePayroll employee : employees) {
+                writer.write(employee.toString());
+                writer.newLine();
+            }
+            System.out.println("Employee Payroll written to file.");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
