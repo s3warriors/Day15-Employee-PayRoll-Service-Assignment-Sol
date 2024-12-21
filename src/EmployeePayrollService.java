@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -16,6 +17,8 @@ public class EmployeePayrollService {
         service.writeEmployeeToConsole();
         // UC 2: Demonstrate File Operations
         service.performFileOperations();
+        // UC 3: Create a Watch Service for a Directory
+        service.watchDirectory("testDirectory");
    }
 
 
@@ -78,5 +81,29 @@ public class EmployeePayrollService {
         }
     }
 
+
+    // UC 3: Watch Service for a Directory
+    private void watchDirectory(String directoryPath) throws IOException, InterruptedException {
+        Path path = Paths.get(directoryPath);
+        WatchService watchService = FileSystems.getDefault().newWatchService();
+
+        path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
+                StandardWatchEventKinds.ENTRY_DELETE,
+                StandardWatchEventKinds.ENTRY_MODIFY);
+
+        System.out.println("Watching directory: " + path);
+
+        while (true) {
+            WatchKey key = watchService.take();
+            for (WatchEvent<?> event : key.pollEvents()) {
+                WatchEvent.Kind<?> kind = event.kind();
+                Path fileName = (Path) event.context();
+                System.out.println(kind + ": " + fileName);
+            }
+            if (!key.reset()) {
+                break;
+            }
+        }
+    }
 
 }
